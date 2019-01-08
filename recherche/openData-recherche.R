@@ -158,3 +158,71 @@ lang.typ <- gemeindedaten.raw %>%
 
 xtabs(lang.typ$n ~ lang.typ$sprachregionen + lang.typ$stadt_land, data=lang.typ)
 #
+#===============================
+# 10. Erstellen Sie ein politisches Profil nach Sprachregionen mit der Hilfe der 
+# Variablen zu den Wähleranteilen.
+gemeindedaten.raw %>%
+  dplyr::select(sprachregionen , polit_fdp, polit_cvp, polit_gps) %>% 
+  group_by(sprachregionen) %>%
+  summarise(mean(polit_gps, na.rm = T))
+
+gemeindedaten.raw %>%
+  dplyr::select(sprachregionen, bev_total, polit_fdp) %>% 
+  group_by(sprachregionen) %>%
+  summarise(sum(bev_total), sum(polit_fdp * bev_total / 100, na.rm=T))
+
+
+
+gemeindedaten.raw %>%
+  dplyr::select(sprachregionen, bev_total, polit_fdp, polit_cvp, polit_svp) %>% 
+  mutate(
+    sum_fdp = polit_fdp * bev_total / 100, 
+    sum_svp = polit_svp * bev_total / 100, 
+    sum_cvp = polit_cvp * bev_total / 100) %>%
+  group_by(sprachregionen) %>%
+  summarise(bev = sum(bev_total), 
+            fdp = sum(sum_fdp), 
+            svp = sum(sum_svp), 
+            cvp = sum(sum_cvp))
+
+tmp <- gemeindedaten.raw %>%
+  dplyr::group_by(sprachregionen) %>%
+  dplyr::select(sprachregionen, bev_total,
+                polit_fdp, polit_cvp, polit_gps, polit_svp, polit_bdp, polit_sp) %>% 
+  mutate(
+    sum_fdp = polit_fdp * bev_total / 100, 
+    sum_gps = polit_gps * bev_total / 100, 
+    sum_bdp = polit_bdp * bev_total / 100, 
+    sum_svp = polit_svp * bev_total / 100, 
+    sum_sp = polit_sp * bev_total / 100, 
+    sum_cvp = polit_cvp * bev_total / 100) %>%
+    summarise(x = sum(bev_total))
+
+            sum(tmp$sum_cvp, na.rm = T),
+            sum(tmp$sum_gps, na.rm = T),
+            sum(tmp$sum_svp, na.rm = T),
+            sum(tmp$sum_sp, na.rm = T),
+            sum(tmp$sum_bdp, na.rm = T),
+            sum(tmp$sum_fdp, na.rm = T))
+
+t <- c(sum(tmp$bev_total),
+       sum(tmp$sum_cvp, na.rm = T),
+       sum(tmp$sum_gps, na.rm = T),
+       sum(tmp$sum_svp, na.rm = T),
+       sum(tmp$sum_sp, na.rm = T),
+       sum(tmp$sum_bdp, na.rm = T),
+       sum(tmp$sum_fdp, na.rm = T))
+
+t
+
+gemeindedaten.raw %>%
+  dplyr::select(sprachregionen, bev_total, polit_fdp) %>% 
+  group_by(sprachregionen) %>%
+  summarise(sum(bev_total), 
+            sum(polit_fdp * bev_total / 100, na.rm=T),
+            sum(polit_gps * bev_total / 100, na.rm=T),
+            sum(polit_bdp * bev_total / 100, na.rm=T),
+            sum( polit_svp * bev_total / 100, na.rm=T),
+            sum(polit_sp * bev_total / 100, na.rm=T),
+            sum( polit_cvp * bev_total / 100))
+  

@@ -82,6 +82,9 @@ gemeindedaten.raw %>%
 # in der Tendenz sogar eher rückläufig ist? 
 # Analysieren sie zusätzlich graphisch, 
 # ob die Unterscheidung von städtischen und ländlichen Gemeinden dabei eine Rolle spielt?
+
+# STARKE Vereinfachung: man nimmt die mittler Wachstum. Ist mathematisch FALSCH, 
+# gibt aber eine Schätzwert.
 gemeindedaten.raw %>%
   group_by(sprachregionen) %>%
   summarise (mean(bev_1014))
@@ -127,5 +130,36 @@ corrplot(mcor)
 # 9. Visualisieren Sie eine Kontingenztabelle mit den Variablen Stadt_Land und Sprachregionen. 
 # Welcher Gemeindetyp überwiegt bei deutschsprachigen Gemeinden, 
 # welcher bei italienischsprachigen Gemeinden. Gibt es in jeder Sprachregion isolierte Städte?
+lang.typ <- gemeindedaten.raw %>%
+  dplyr::select(sprachregionen, stadt_land) %>% 
+  group_by(sprachregionen, stadt_land) %>%
+  summarise(n=n()) %>%
+  arrange(sprachregionen, desc(n))
 
+xtabs(lang.typ$n ~ lang.typ$sprachregionen + lang.typ$stadt_land, data=lang.typ)
+
+#===============================
+# 10. Erstellen Sie ein politisches Profil nach Sprachregionen mit der Hilfe der 
+# Variablen zu den Wähleranteilen.
+gemeindedaten.raw %>%
+  dplyr::select(sprachregionen, 
+                bev_total, 
+                polit_svp, 
+                polit_sp, 
+                polit_fdp, 
+                polit_cvp, 
+                polit_gps, 
+                polit_evp, 
+                polit_glp, 
+                polit_bdp) %>% 
+  group_by(sprachregionen) %>%
+  summarise(pop = sum(bev_total), 
+            svp = round(sum( polit_svp * bev_total / 100, na.rm=T) / pop,3),
+            sp = round(sum(polit_sp * bev_total / 100, na.rm=T) / pop,3),
+            fdp = round(sum(polit_fdp * bev_total / 100, na.rm=T) / pop,3),
+            evp = round(sum(polit_evp * bev_total / 100, na.rm=T) / pop,3),
+            gps = round(sum(polit_gps * bev_total / 100, na.rm=T) / pop,3),
+            bdp = round(sum(polit_bdp * bev_total / 100, na.rm=T) / pop,3),
+            glp = round(sum(polit_glp * bev_total / 100, na.rm=T) / pop,3),
+            cvp = round(sum( polit_cvp * bev_total / 100, na.rm = T) / pop,3))
 
