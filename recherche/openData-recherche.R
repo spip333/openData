@@ -130,4 +130,18 @@ p +  geom_bar(stat = "identity",
   ylab("Bevölkerungswachstum 2010-14 (%)") +
   labs(fill = "Sprachregionen")
 
+#===============================
+# 8. Untersuchen Sie die Zusammenhangsstruktur folgender Variablen:
+# bev_dichte, bev_ausl, alter_0_19, alter_20_64, alter_65, bevbew_geburt, 
+# sozsich_sh, strafen_stgb Gibt es Korrelationen? Falls ja, lassen Sie sich erklären 
+# oder sind sie eher unerwartet? Suchen Sie sich einen Ihnen interessant erscheinenden 
+# Zusammenhang und schauen Sie sich diesen in einem eigenen Scatterplot an
 
+tmp <- gemeindedaten.raw %>%
+  dplyr::select(bev_dichte, bev_ausl, alter_0_19, alter_20_64, alter_65., bevbew_geburt,sozsich_sh, strafen_stgb )
+
+library(corrplot)
+mcor<-cor(tmp)
+corrplot(mcor)
+
+# interessante Korrelation: bev_dichte vs bev_ausl, bev_ausl vs Strafen_stgb, sozsich_sh vs bev_dichte
