@@ -6,10 +6,11 @@
 
 #===============================
 # 1. Laden Sie den Datensatz gemeindedaten.csv 
-
-getwd()
-gemeindedaten.raw <- read.table("./material/gemeindedaten.csv", sep = ",", fileEncoding = "UTF-8")
-?read.table
+gemeindedaten.raw <- read.table("./material/gemeindedaten.csv", 
+                                header=TRUE, 
+                                sep = "," , 
+                                na.strings = c("NA","*"),
+                                fileEncoding = "UTF-8")
 #===============================
 # 2. Verschaffen Sie sich einen ersten Überblick zu den Daten? 
 # Hat mit dem Einlesen alles wie erwartet geklappt?
@@ -73,5 +74,39 @@ gemeindedaten.raw %>%
   group_by(kantone) %>%
   summarise (anz_gemeinden = n()) %>%
   filter(anz_gemeinden == min(anz_gemeinden))
+
+#===============================
+# 7. Betrachten Sie die Veränderung der Einwohnerzahl von 2010 bis 2014 nach 
+# Sprachregionen. In welcher Sprachregionen sind die Gemeinden am stärksten gewachsen? 
+# In welcher am wenigsten oder gibt es Sprachregionen, in welcher die Einwohnerentwicklung
+# in der Tendenz sogar eher rückläufig ist? 
+# Analysieren sie zusätzlich graphisch, 
+# ob die Unterscheidung von städtischen und ländlichen Gemeinden dabei eine Rolle spielt?
+gemeindedaten.raw %>%
+  group_by(sprachregionen) %>%
+  summarise (mean(bev_1014))
+
+
+# Barplot
+library(ggplot2)
+
+gde.growth <- gemeindedaten.raw %>%
+  group_by(sprachregionen, stadt_land) %>%
+  summarise (growth = mean(bev_1014))
+
+gde.growth
+
+plot.new()
+
+p <- ggplot(gde.growth, 
+            aes(gde.growth$stadt_land,
+                gde.growth$growth))
+p +  geom_bar(stat = "identity", 
+              aes(fill=gde.growth$sprachregionen), 
+              position="dodge") +
+  ggtitle("Bevölkerungswachstum 2010-14 nach Sprachregion und Gemeindetypen") +
+  xlab("Gemeindetypen") + 
+  ylab("Bevölkerungswachstum 2010-14 (%)") +
+  labs(fill = "Sprachregionen")
 
 
