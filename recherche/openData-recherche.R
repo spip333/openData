@@ -145,3 +145,16 @@ mcor<-cor(tmp)
 corrplot(mcor)
 
 # interessante Korrelation: bev_dichte vs bev_ausl, bev_ausl vs Strafen_stgb, sozsich_sh vs bev_dichte
+
+#===============================
+# 9. Visualisieren Sie eine Kontingenztabelle mit den Variablen Stadt_Land und Sprachregionen. 
+# Welcher Gemeindetyp überwiegt bei deutschsprachigen Gemeinden, 
+# welcher bei italienischsprachigen Gemeinden. Gibt es in jeder Sprachregion isolierte Städte?
+lang.typ <- gemeindedaten.raw %>%
+  dplyr::select(sprachregionen, stadt_land) %>% 
+  group_by(sprachregionen, stadt_land) %>%
+  summarise(n=n()) %>%
+  arrange(sprachregionen, desc(n))
+
+xtabs(lang.typ$n ~ lang.typ$sprachregionen + lang.typ$stadt_land, data=lang.typ)
+#
