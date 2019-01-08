@@ -48,3 +48,30 @@ print(paste("na: " ,na, " - null:", null))
 # 3. Falls nötig, definieren Sie im dataframe fehlende Werte so,
 # dass R diese tatsächlich als fehlende Werte auffasst.
 
+# => gemacht über import
+
+#===============================
+# 4. Beantworten Sie folgende Fragen:
+# - Wie viele Gemeinden gab es in der Schweiz im Jahr 2014? 
+nrow(gemeindedaten.raw)
+# - Was ist die mittlere Einwohnerzahl einer Schweizer Gemeinde? 
+mean(gemeindedaten.raw$bev_total)
+# - Wie viele Einwohner leben in der grössten Gemeinde? 
+max(gemeindedaten.raw$bev_total)
+# - Wie viele in der kleinsten?
+min(gemeindedaten.raw$bev_total)
+
+#===============================
+# 5. In welchem Kanton gibt es am meisten Gemeinden? In welchem am wenigsten?
+
+gemeindedaten.raw %>%
+  group_by(kantone) %>%
+  summarise (anz_gemeinden = n()) %>%
+  filter(anz_gemeinden == max(anz_gemeinden))
+
+gemeindedaten.raw %>%
+  group_by(kantone) %>%
+  summarise (anz_gemeinden = n()) %>%
+  filter(anz_gemeinden == min(anz_gemeinden))
+
+
