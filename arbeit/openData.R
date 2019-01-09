@@ -76,6 +76,20 @@ gemeindedaten.raw %>%
   filter(anz_gemeinden == min(anz_gemeinden))
 
 #===============================
+# 6. Betrachten Sie die Einwohnerzahlen der Gemeinden gruppiert nach Sprachregionen. 
+# Wie heissen die jeweils grössten Gemeinden?
+
+gemeindedaten.raw %>%
+  group_by(sprachregionen) %>%
+  filter(rank(desc(bev_total))==1) %>%
+  dplyr::select(sprachregionen, gmdename, bev_total)
+
+gemeindedaten.raw %>%
+  group_by(sprachregionen) %>%
+  filter(rank(bev_total)==1) %>%
+  dplyr::select(sprachregionen, gmdename, bev_total)
+
+#===============================
 # 7. Betrachten Sie die Veränderung der Einwohnerzahl von 2010 bis 2014 nach 
 # Sprachregionen. In welcher Sprachregionen sind die Gemeinden am stärksten gewachsen? 
 # In welcher am wenigsten oder gibt es Sprachregionen, in welcher die Einwohnerentwicklung
@@ -83,8 +97,8 @@ gemeindedaten.raw %>%
 # Analysieren sie zusätzlich graphisch, 
 # ob die Unterscheidung von städtischen und ländlichen Gemeinden dabei eine Rolle spielt?
 
-# STARKE Vereinfachung: man nimmt die mittler Wachstum. Ist mathematisch FALSCH, 
-# gibt aber eine Schätzwert.
+# STARKE Vereinfachung über die mittlere Wachstum. Ist mathematisch FALSCH, ermöglicht eine 
+# Annäherung.
 gemeindedaten.raw %>%
   group_by(sprachregionen) %>%
   summarise (mean(bev_1014))
@@ -141,7 +155,7 @@ xtabs(lang.typ$n ~ lang.typ$sprachregionen + lang.typ$stadt_land, data=lang.typ)
 #===============================
 # 10. Erstellen Sie ein politisches Profil nach Sprachregionen mit der Hilfe der 
 # Variablen zu den Wähleranteilen.
-gemeindedaten.raw %>%
+polit <- gemeindedaten.raw %>%
   dplyr::select(sprachregionen, 
                 bev_total, 
                 polit_svp, 
@@ -163,3 +177,4 @@ gemeindedaten.raw %>%
             glp = round(sum(polit_glp * bev_total / 100, na.rm=T) / pop,3),
             cvp = round(sum( polit_cvp * bev_total / 100, na.rm = T) / pop,3))
 
+polit

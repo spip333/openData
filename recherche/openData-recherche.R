@@ -216,13 +216,55 @@ t <- c(sum(tmp$bev_total),
 t
 
 gemeindedaten.raw %>%
-  dplyr::select(sprachregionen, bev_total, polit_fdp) %>% 
+  dplyr::select(sprachregionen, bev_total, polit_fdp, polit_gps, polit_bdp, polit_svp, polit_sp, polit_cvp, polit_gps) %>% 
   group_by(sprachregionen) %>%
-  summarise(sum(bev_total), 
-            sum(polit_fdp * bev_total / 100, na.rm=T),
-            sum(polit_gps * bev_total / 100, na.rm=T),
-            sum(polit_bdp * bev_total / 100, na.rm=T),
-            sum( polit_svp * bev_total / 100, na.rm=T),
-            sum(polit_sp * bev_total / 100, na.rm=T),
-            sum( polit_cvp * bev_total / 100))
+  summarise(pop = sum(bev_total), 
+            fdp = sum(polit_fdp * bev_total / 100, na.rm=T) / pop,
+            gps = sum(polit_gps * bev_total / 100, na.rm=T) / pop,
+            bdp = sum(polit_bdp * bev_total / 100, na.rm=T) / pop,
+            svp = sum( polit_svp * bev_total / 100, na.rm=T) / pop,
+            sp = sum(polit_sp * bev_total / 100, na.rm=T) / pop,
+            cvp = sum( polit_cvp * bev_total / 100, na.rm = T) / pop)
   
+# 10. Erstellen Sie ein politisches Profil nach Sprachregionen mit der Hilfe der 
+# Variablen zu den Wähleranteilen.
+polit <- gemeindedaten.raw %>%
+  dplyr::select(sprachregionen, 
+                bev_total, 
+                polit_svp, 
+                polit_sp, 
+                polit_fdp, 
+                polit_cvp, 
+                polit_gps, 
+                polit_evp, 
+                polit_glp, 
+                polit_bdp) %>% 
+  group_by(sprachregionen) %>%
+  summarise(pop = sum(bev_total), 
+            svp = round(sum( polit_svp * bev_total / 100, na.rm=T) / pop,3),
+            sp = round(sum(polit_sp * bev_total / 100, na.rm=T) / pop,3),
+            fdp = round(sum(polit_fdp * bev_total / 100, na.rm=T) / pop,3),
+            evp = round(sum(polit_evp * bev_total / 100, na.rm=T) / pop,3),
+            gps = round(sum(polit_gps * bev_total / 100, na.rm=T) / pop,3),
+            bdp = round(sum(polit_bdp * bev_total / 100, na.rm=T) / pop,3),
+            glp = round(sum(polit_glp * bev_total / 100, na.rm=T) / pop,3),
+            cvp = round(sum( polit_cvp * bev_total / 100, na.rm = T) / pop,3))
+
+
+polit
+
+plot.new()
+boxplot(polit$svp, subset = sprachregionen == "deutsch")
+boxplot(polit$svp, subset = sprachregionen == "franzoesisch")
+boxplot(polit$cvp, add=T)
+
+p2 <- ggplot(polit$pop)
+p2 +  geom_bar(stat = "identity", position = "dodge") 
+               
+
+               aes(fill=polit$sprachregionen), 
+               position="dodge") +
+  ggtitle("Bevölkerungswachstum 2010-14 nach Sprachregion und Gemeindetypen") +
+  xlab("Gemeindetypen") + 
+  ylab("Bevölkerungswachstum 2010-14 (%)") +
+  labs(fill = "Sprachregionen")
