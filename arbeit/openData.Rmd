@@ -9,6 +9,7 @@ output: html_document
 library(dplyr)
 library(corrplot)
 library(ggplot2)
+library(GGally)
 ```
 
 # 1. Daten Laden 
@@ -183,6 +184,27 @@ corrplot(mcor)
     - alter_65 vs. alter_20_64
 
         - findet ein "Exode" aus bestimmten Regionen statt ? wegen Arbeitsmöglichkeite ?
+
+- Erstellen der Scatterplots für diese Fragestellungen bev_dichte, bev_ausl,sozsich_sh, strafen_stgb: 
+
+```{r}
+cor1  <- gemeindedaten.raw %>%
+  dplyr::select(bev_dichte, bev_ausl,sozsich_sh, strafen_stgb )
+ggpairs(cor1, 1:4)
+
+```
+
+- Patterns sind erkennbar, die auf einer positiven Korrelationen hinweist.
+
+```{r}
+cor2  <- gemeindedaten.raw %>%
+  dplyr::select(alter_0_19, alter_20_64, alter_65. )
+
+ggpairs(cor2, 1:3)
+```
+
+- klare negative Korrelationen erkennbar.
+
 
 # 9. Spezifizitäten der Sprachregionen 
 

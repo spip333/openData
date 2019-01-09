@@ -136,13 +136,44 @@ p +  geom_bar(stat = "identity",
 # Zusammenhang und schauen Sie sich diesen in einem eigenen Scatterplot an
 
 tmp <- gemeindedaten.raw %>%
-  dplyr::select(bev_dichte, bev_ausl, alter_0_19, alter_20_64, alter_65., bevbew_geburt,sozsich_sh, strafen_stgb )
+  dplyr::select(bev_dichte, bev_ausl, alter_0_19, alter_20_64, alter_65.,sozsich_sh, strafen_stgb )
+
+cor1  <- gemeindedaten.raw %>%
+  dplyr::select(bev_dichte, bev_ausl,sozsich_sh, strafen_stgb )
+
+cor2  <- gemeindedaten.raw %>%
+  dplyr::select(alter_0_19, alter_20_64, alter_65. )
+
 
 library(corrplot)
 mcor<-cor(tmp)
 corrplot(mcor)
 
 # interessante Korrelation: bev_dichte vs bev_ausl, bev_ausl vs Strafen_stgb, sozsich_sh vs bev_dichte
+head(tmp)
+
+ggpairs(tmp, 1:2)
+
+library(gcookbook) # Für Daten
+library(GGally)
+help(countries)
+
+# Wir untersuchen, wie Wirtschaftswachstum (GDP), Erwerbsquote(laborrate)
+# Gesundheitsausgaben (healthexp) und Kindersterblichkeit (infmortality)
+# korrelieren
+
+head(countries)
+
+
+# Erneut wird zuerst ein Subset für das Jahr 2009 erstellt
+c2009<-countries %>%
+  filter(Year==2009) %>%
+  select(c(-Code,-Year))
+
+# Die Funktion ggpairs() ist ausgezeichnet für Scatterplot-Matrizen
+# Erstellen Sie eine Scatterplot/Korrelations-Matrix aller Variablen des reduzierten 
+# Datensatzes c2009 (Achtung: schliessen Sie die Variable "Name" aus)
+ggpairs(c2009[,2:5])
 
 #===============================
 # 9. Visualisieren Sie eine Kontingenztabelle mit den Variablen Stadt_Land und Sprachregionen. 
