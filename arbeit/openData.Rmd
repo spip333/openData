@@ -7,32 +7,35 @@ output: html_document
 
 ```{r setup, include=FALSE}
 library(dplyr)
+library(corrplot)
+library(ggplot2)
 ```
-```{r openData1}
 
-# 1. Laden Sie den Datensatz gemeindedaten.csv 
+# 1. Daten Laden 
+Laden Sie den Datensatz gemeindedaten.csv.
+
+Dies setzt voraus, dass die Datenquelle (gemeindedaten.csv) im selben Verzeichnis ist, wie die *.Rmd Datei.
+
+```{r openData1}
 gemeindedaten.raw <- read.table("gemeindedaten.csv", 
                                 header=TRUE, 
                                 sep = "," , 
                                 na.strings = c("NA","*"),
                                 fileEncoding = "UTF-8")
+```
+# 2. Daten prüfen 
 
-# 2. Verschaffen Sie sich einen ersten Überblick zu den Daten? 
-# Hat mit dem Einlesen alles wie erwartet geklappt?
-# Sind die Daten so kodiert, wie Sie es erwarten? 
-# Stimmen die Datenformate der Variablen?
-# Gibt es fehlende Werte und wie sind diese kodiert?
-
+```{r openData2}
 head(gemeindedaten.raw)
 str(gemeindedaten.raw)
 nrow(gemeindedaten.raw)
 ncol(gemeindedaten.raw)
 colnames(gemeindedaten.raw)
+```
 
-# Import mit Setzen Encoding = UTF-8 is korrekt
+- Prüfen, ob <na> -Werte oder NULL vorkommen: 
 
-# Prüfen, ob <na> oder NULL vorkommen:
-
+```{r}
 null <- 0
 na <- 0
 for (i in 1:nrow(gemeindedaten.raw)){
@@ -48,30 +51,51 @@ for (i in 1:nrow(gemeindedaten.raw)){
 }
 
 print(paste("na: " ,na, " - null:", null))
-# <na> - Werte kommen vor
+```
 
-# 3. Falls nötig, definieren Sie im dataframe fehlende Werte so,
-# dass R diese tatsächlich als fehlende Werte auffasst.
+- Hat mit dem Einlesen alles wie erwartet geklappt?
 
-# => gemacht über import
+    - keine Probleme: Anz. Datensätze in Ziel - Struktur sieht konsistent mit Quelle aus. 
 
-# 4. Beantworten Sie folgende Fragen:
-# - Wie viele Gemeinden gab es in der Schweiz im Jahr 2014? 
+- Sind die Daten so kodiert, wie Sie es erwarten? 
+
+    - Encoding explizit im Import gesetzt, somit korrekte Wiedergabe der Zeichen ausserhalb des ASCII Basis Datensatzes. 
+    
+- Stimmen die Datenformate der Variablen?
+
+    - Format müsste nicht korrigiert werden
+
+- Gibt es fehlende Werte und wie sind diese kodiert?
+
+    - <na> Werte kommen vor, werden explizit durch import gehandelt
+
+# 3. Handlung der fehlende Werte
+
+- Falls nötig, definieren Sie im dataframe fehlende Werte so, dass R diese tatsächlich als fehlende Werte auffasst.
+
+    - Fehlende Werte werden im Import auf <NA> gesetzt.
+
+# 4 - 6. Abfragen
+
+``` {r}
+## 4.Beantworten Sie folgende Fragen:
+
+# Wie viele Gemeinden gab es in der Schweiz im Jahr 2014?  
 nrow(gemeindedaten.raw)
-# - Was ist die mittlere Einwohnerzahl einer Schweizer Gemeinde? 
+# Was ist die mittlere Einwohnerzahl einer Schweizer Gemeinde? 
 mean(gemeindedaten.raw$bev_total)
-# - Wie viele Einwohner leben in der grössten Gemeinde? 
+# Wie viele Einwohner leben in der grössten Gemeinde? 
 max(gemeindedaten.raw$bev_total)
-# - Wie viele in der kleinsten?
+# Wie viele in der kleinsten?
 min(gemeindedaten.raw$bev_total)
 
-# 5. In welchem Kanton gibt es am meisten Gemeinden? In welchem am wenigsten?
-
+## 5. In welchem Kanton gibt es am meisten Gemeinden?
 gemeindedaten.raw %>%
   group_by(kantone) %>%
   summarise (anz_gemeinden = n()) %>%
   filter(anz_gemeinden == max(anz_gemeinden))
 
+## In welchem am wenigsten?
 gemeindedaten.raw %>%
   group_by(kantone) %>%
   summarise (anz_gemeinden = n()) %>%
@@ -85,27 +109,23 @@ gemeindedaten.raw %>%
   filter(rank(desc(bev_total))==1) %>%
   dplyr::select(sprachregionen, gmdename, bev_total)
 
-gemeindedaten.raw %>%
-  group_by(sprachregionen) %>%
-  filter(rank(bev_total)==1) %>%
-  dplyr::select(sprachregionen, gmdename, bev_total)
+```
 
-# 7. Betrachten Sie die Veränderung der Einwohnerzahl von 2010 bis 2014 nach 
-# Sprachregionen. In welcher Sprachregionen sind die Gemeinden am stärksten gewachsen? 
-# In welcher am wenigsten oder gibt es Sprachregionen, in welcher die Einwohnerentwicklung
-# in der Tendenz sogar eher rückläufig ist? 
-# Analysieren sie zusätzlich graphisch, 
-# ob die Unterscheidung von städtischen und ländlichen Gemeinden dabei eine Rolle spielt?
+# 7. Bevölkerungswachstum
 
-# STARKE Vereinfachung über die mittlere Wachstum. Ist mathematisch FALSCH, ermöglicht eine 
-# Annäherung.
+- Betrachten Sie die Veränderung der Einwohnerzahl von 2010 bis 2014 nach  Sprachregionen. In welcher Sprachregionen sind die Gemeinden am stärksten gewachsen?  In welcher am wenigsten oder gibt es Sprachregionen, in welcher die Einwohnerentwicklung in der Tendenz sogar eher rückläufig ist?  
+
+```{r}
 gemeindedaten.raw %>%
   group_by(sprachregionen) %>%
   summarise (mean(bev_1014))
+```
 
-# Barplot
-library(ggplot2)
+- Bemerkung : Hier setze ich eine STARKE Vereinfachung über die mittlere Wachstum ein.. Ist mathematisch FALSCH, ermöglicht eine Annäherung.
 
+- Analysieren sie zusätzlich graphisch, ob die Unterscheidung von städtischen und ländlichen Gemeinden dabei eine Rolle spielt?
+
+```{r}
 gde.growth <- gemeindedaten.raw %>%
   group_by(sprachregionen, stadt_land) %>%
   summarise (growth = mean(bev_1014))
@@ -122,24 +142,54 @@ p +  geom_bar(stat = "identity",
   xlab("Gemeindetypen") + 
   ylab("Bevölkerungswachstum 2010-14 (%)") +
   labs(fill = "Sprachregionen")
+```
 
-# 8. Untersuchen Sie die Zusammenhangsstruktur folgender Variablen:
-# bev_dichte, bev_ausl, alter_0_19, alter_20_64, alter_65,bevbew_geburt, 
-# sozsich_sh, strafen_stgb Gibt es Korrelationen? Falls ja, lassen Sie sich erklären 
-# oder sind sie eher unerwartet? Suchen Sie sich einen Ihnen interessant erscheinenden 
-# Zusammenhang und schauen Sie sich diesen in einem eigenen Scatterplot an
+# 8. Korrelationsanalyse
+
+- Untersuchen Sie die Zusammenhangsstruktur folgender Variablen: bev_dichte, bev_ausl, alter_0_19, alter_20_64, alter_65,bevbew_geburt,sozsich_sh, strafen_stgb.
+
+- Gibt es Korrelationen? Falls ja, lassen Sie sich erklären oder sind sie eher unerwartet? Suchen Sie sich einen Ihnen interessant erscheinenden Zusammenhang und schauen Sie sich diesen in einem eigenen Scatterplot an
+
+```{r}
 cordata <- gemeindedaten.raw %>%
   dplyr::select(bev_dichte, bev_ausl, alter_0_19, alter_20_64, alter_65., bevbew_geburt,sozsich_sh, strafen_stgb )
 
-library(corrplot)
 mcor<-cor(cordata)
 corrplot(mcor)
+```
 
-# interessante Korrelation: bev_dichte vs bev_ausl, bev_ausl vs Strafen_stgb, sozsich_sh vs bev_dichte
+- Verschiedene positive Korrelationen können aus der Grafik gelesen werden: 
 
-# 9. Visualisieren Sie eine Kontingenztabelle mit den Variablen Stadt_Land und Sprachregionen. 
-# Welcher Gemeindetyp überwiegt bei deutschsprachigen Gemeinden, 
-# welcher bei italienischsprachigen Gemeinden. Gibt es in jeder Sprachregion isolierte Städte?
+    - bev_dichte vs bev_ausl
+    
+        - kommen eher die Einwanderung zu den städtischen Gebiete?
+
+    - bev_ausl vs Strafen_stgb, 
+
+        - mehr Kriminalität in der Städten, warum? Parallel mit der 1. Korrelation? 
+      
+    - sozsich_sh vs bev_ausl
+
+        - mehr Ausländer beziehen soziale Hilfe ?
+
+    - sozsich_sh vs bev_dichte
+
+        - mehr Leute beziehen soziale Hilfe in den Städten, warum? Parallel mit Korrelation oben? oder einfach ein besseres soziales Netz in den nicht-städtischen Gebieten?
+
+- Es kommen auch negative Korrelationen hervor: 
+
+    - alter_65 vs. alter_0_19
+
+    - alter_65 vs. alter_20_64
+
+        - findet ein "Exode" aus bestimmten Regionen statt ? wegen Arbeitsmöglichkeite ?
+
+# 9. Spezifizitäten der Sprachregionen 
+
+- Visualisieren Sie eine Kontingenztabelle mit den Variablen Stadt_Land und Sprachregionen. 
+
+```{r}
+# Welcher Gemeindetyp überwiegt bei deutschsprachigen Gemeinden, welcher bei italienischsprachigen Gemeinden. Gibt es in jeder Sprachregion isolierte Städte?
 lang.typ <- gemeindedaten.raw %>%
   dplyr::select(sprachregionen, stadt_land) %>% 
   group_by(sprachregionen, stadt_land) %>%
@@ -147,6 +197,10 @@ lang.typ <- gemeindedaten.raw %>%
   arrange(sprachregionen, desc(n))
 
 xtabs(lang.typ$n ~ lang.typ$sprachregionen + lang.typ$stadt_land, data=lang.typ)
+```
+
+
+```{r}
 
 # 10. Erstellen Sie ein politisches Profil nach Sprachregionen mit der Hilfe der 
 # Variablen zu den Wähleranteilen.
