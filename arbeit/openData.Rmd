@@ -221,11 +221,13 @@ lang.typ <- gemeindedaten.raw %>%
 xtabs(lang.typ$n ~ lang.typ$sprachregionen + lang.typ$stadt_land, data=lang.typ)
 ```
 
+# 10. Politisches Profil der Sprachregionen
+- Erstellen Sie ein politisches Profil nach Sprachregionen mit der Hilfe derVariablen zu den Wähleranteilen.
+
+- Zuerst erstelle ich eine Tabelle der Wähleranteile per Sprachregion, bezogen auf der Population:
 
 ```{r}
 
-# 10. Erstellen Sie ein politisches Profil nach Sprachregionen mit der Hilfe der 
-# Variablen zu den Wähleranteilen.
 polit <- gemeindedaten.raw %>%
   dplyr::select(sprachregionen, 
                 bev_total, 
@@ -236,7 +238,9 @@ polit <- gemeindedaten.raw %>%
                 polit_gps, 
                 polit_evp, 
                 polit_glp, 
-                polit_bdp) %>% 
+                polit_bdp,
+                polit_klre,
+                polit_ubrige) %>% 
   group_by(sprachregionen) %>%
   summarise(pop = sum(bev_total), 
             svp = round(sum( polit_svp * bev_total / 100, na.rm=T) / pop,3),
@@ -246,7 +250,66 @@ polit <- gemeindedaten.raw %>%
             gps = round(sum(polit_gps * bev_total / 100, na.rm=T) / pop,3),
             bdp = round(sum(polit_bdp * bev_total / 100, na.rm=T) / pop,3),
             glp = round(sum(polit_glp * bev_total / 100, na.rm=T) / pop,3),
-            cvp = round(sum( polit_cvp * bev_total / 100, na.rm = T) / pop,3))
+            cvp = round(sum( polit_cvp * bev_total / 100, na.rm = T) / pop,3),
+            klre = round(sum( polit_klre * bev_total / 100, na.rm = T) / pop,3),
+            ubrige = round(sum( polit_ubrige * bev_total / 100, na.rm = T) / pop,3))
 
 polit
 ```
+- Für die Grafische Darstellung werde ich ein separaten Barplot per Region erstellen:
+
+```{r}
+d <- t(polit[1,3:11])
+f <- t(polit[2,3:11])
+i <- t(polit[3,3:11])
+r <- t(polit[4,3:11])
+
+parteien <- rownames(d)
+
+pol <- data.frame(d)
+pol$f <- f
+pol$i <- i
+pol$r <- r
+
+pd <- ggplot(pol,aes(parteien, pol$d))
+pd +  geom_bar(stat = "identity", 
+              aes(fill=parteien), 
+              position="dodge") +
+  ggtitle("Politische Präferenzen in den deutschsprachigen Regionen") +
+  xlab("Partei") + 
+  ylab("Wähleranteil")
+
+pf <- ggplot(pol,aes(parteien, pol$f))
+pf +  geom_bar(stat = "identity", 
+              aes(fill=parteien), 
+              position="dodge") +
+  ggtitle("Politische Präferenzen in den französichsprachigen Regionen") +
+  xlab("Partei") + 
+  ylab("Wähleranteil")
+
+pi <- ggplot(pol,aes(parteien, pol$i))
+pi +  geom_bar(stat = "identity", 
+              aes(fill=parteien), 
+              position="dodge") +
+  ggtitle("Politische Präferenzen in den italieanischsprachigen Regionen") +
+  xlab("Partei") + 
+  ylab("Wähleranteil")
+
+pr <- ggplot(pol,aes(parteien, pol$r))
+pr +  geom_bar(stat = "identity", 
+              aes(fill=parteien), 
+              position="dodge") +
+  ggtitle("Politische Präferenzen in den räthoromanischen Regionen") +
+  xlab("Partei") + 
+  ylab("Wähleranteil")
+```
+
+- Merkpünkte :
+
+    - sp stärker in den französichsprachigen Gebiete als in den deutschsprachigen Gebiete.
+    
+    - svp stärker in den deutschsprachigen Gebiete als in der französichsprachigen und italieanischsprachigen Gebiete. In italieanischsprachigen Gebiete spielt der Anteil der Lega ("kleine Rechtsparteien") eine Rolle.
+
+    - fdp bedeutender in den französichsprachigen und italieanischsprachigen Gebiete als in der Deutschschweiz.
+    
+    - gps markant stärker im französichsprachigen Raum.

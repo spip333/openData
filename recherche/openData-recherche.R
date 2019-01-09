@@ -144,6 +144,9 @@ cor1  <- gemeindedaten.raw %>%
 cor2  <- gemeindedaten.raw %>%
   dplyr::select(alter_0_19, alter_20_64, alter_65. )
 
+ggpairs(cor1, 1:4)
+ggpairs(cor2, 1:3)
+
 
 library(corrplot)
 mcor<-cor(tmp)
@@ -258,8 +261,6 @@ gemeindedaten.raw %>%
 # 10. Erstellen Sie ein politisches Profil nach Sprachregionen mit der Hilfe der 
 # Variablen zu den Wähleranteilen.
 
-library(dplyr)
-
 polit <- gemeindedaten.raw %>%
   dplyr::select(sprachregionen, 
                 bev_total, 
@@ -281,26 +282,78 @@ polit <- gemeindedaten.raw %>%
             bdp = round(sum(polit_bdp * bev_total / 100, na.rm=T) / pop,3),
             glp = round(sum(polit_glp * bev_total / 100, na.rm=T) / pop,3),
             cvp = round(sum( polit_cvp * bev_total / 100, na.rm = T) / pop,3))
-polit$svp
 
-pt <- table(as.data.frame(polit))
+polit
 
-rm(pt)
+d <- t(polit[1,3:9])
+f <- t(polit[2,3:9])
+i <- t(polit[3,3:9])
+r <- t(polit[4,3:9])
+
+parteien <- rownames(d)
+
+pol <- data.frame(d)
+pol$f <- f
+pol$i <- i
+pol$r <- r
+
+p <- ggplot(pol,aes(parteien, pol$d))
+p +  geom_bar(stat = "identity", 
+              aes(fill=parteien), 
+              position="dodge") +
+  ggtitle("title") +
+  xlab("Partei") + 
+  ylab("Wähleranteil")
+p <- ggplot(pol,aes(parteien, pol$f))
+p +  geom_bar(stat = "identity", 
+              aes(fill=parteien), 
+              position="dodge") +
+  ggtitle("Politische Präferenzen im Deutschsprachigen Raum") +
+  xlab("Partei") + 
+  ylab("Wähleranteil")
+
+polit
+
+p <- ggplot(polit,aes(parteien, polit[1,]))
+p +  geom_bar(stat = "identity", 
+              aes(fill=parteien), 
+              position="dodge") +
+  ggtitle("title") +
+  xlab("Partei") + 
+  ylab("Wähleranteil")
+
+p <- ggplot(pol,aes(parteien, pol$f))
+p +  geom_bar(stat = "identity", 
+              aes(fill=parteien), 
+              position="dodge") +
+  ggtitle("Politische Präferenzen im Deutschsprachigen Regionen") +
+  xlab("Partei") + 
+  ylab("Wähleranteil")
 
 
-plot.new()
-boxplot(polit$svp, subset = sprachregionen == "deutsch")
-boxplot(polit$svp, subset = sprachregionen == "franzoesisch")
-boxplot(polit$cvp, add=T)
+p +  geom_bar(stat = "identity", 
+              aes(fill=parteien), 
+              position="dodge") +
+  ggtitle("Bevölkerungswachstum 2010-14 nach Sprachregion und Gemeindetypen") +
+  xlab("Gemeindetypen") + 
+  ylab("Bevölkerungswachstum 2010-14 (%)")
 
-p2 <- ggplot(polit$pop)
-p2 +  geom_bar(stat = "identity", position = "dodge") 
-               aes(fill=polit$sprachregionen)
-               position="dodge") 
+
+
+
+
+gde.growth
+
+p <- ggplot(gde.growth, 
+            aes(gde.growth$stadt_land,
+                gde.growth$growth))
+p +  geom_bar(stat = "identity", 
+              aes(fill=gde.growth$sprachregionen), 
+              position="dodge") +
   ggtitle("Bevölkerungswachstum 2010-14 nach Sprachregion und Gemeindetypen") +
   xlab("Gemeindetypen") + 
   ylab("Bevölkerungswachstum 2010-14 (%)") +
   labs(fill = "Sprachregionen")
+```
 
-  
-  
+
