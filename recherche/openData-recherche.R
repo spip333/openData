@@ -4,8 +4,6 @@
 
 #===============================
 library(dplyr)
-library(foreign) # remove
-#library(stringr)
 
 #===============================
 # 1. Laden Sie den Datensatz gemeindedaten.csv 
@@ -228,6 +226,9 @@ gemeindedaten.raw %>%
   
 # 10. Erstellen Sie ein politisches Profil nach Sprachregionen mit der Hilfe der 
 # Variablen zu den Wähleranteilen.
+
+library(dplyr)
+
 polit <- gemeindedaten.raw %>%
   dplyr::select(sprachregionen, 
                 bev_total, 
@@ -249,9 +250,12 @@ polit <- gemeindedaten.raw %>%
             bdp = round(sum(polit_bdp * bev_total / 100, na.rm=T) / pop,3),
             glp = round(sum(polit_glp * bev_total / 100, na.rm=T) / pop,3),
             cvp = round(sum( polit_cvp * bev_total / 100, na.rm = T) / pop,3))
+polit$svp
 
+pt <- table(as.data.frame(polit))
 
-polit
+rm(pt)
+
 
 plot.new()
 boxplot(polit$svp, subset = sprachregionen == "deutsch")
@@ -260,11 +264,12 @@ boxplot(polit$cvp, add=T)
 
 p2 <- ggplot(polit$pop)
 p2 +  geom_bar(stat = "identity", position = "dodge") 
-               
-
-               aes(fill=polit$sprachregionen), 
-               position="dodge") +
+               aes(fill=polit$sprachregionen)
+               position="dodge") 
   ggtitle("Bevölkerungswachstum 2010-14 nach Sprachregion und Gemeindetypen") +
   xlab("Gemeindetypen") + 
   ylab("Bevölkerungswachstum 2010-14 (%)") +
   labs(fill = "Sprachregionen")
+
+  
+  
